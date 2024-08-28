@@ -31,22 +31,18 @@ class ProductPage(BaseClass):
         self.driver = driver
 
     def getProductList(self):
-        print(self.get_all_elements(self.allproducts))
         return self.get_all_elements(self.allproducts)
 
     def addProductToCart(self,product_name):
         products = self.getProductList()
         for product in products:
-            productText = product.text
-            if productText in product_name:
-                # print('<<<< inside if >>>>')
+            if product.text in product_name:
                 add_btn = product.find_element(By.XPATH,"//button[contains(@id,'add-to-cart')]")
                 add_btn.click()
+                
 
     def clickOnCart(self):
         self.do_click(self.cartBtn)
-        # print(self.get_element_text(self.cartCount))
-        # return self.get_element_text(self.cartCount)
 
 
 class CheckoutPage(ProductPage):
@@ -58,6 +54,8 @@ class CheckoutPage(ProductPage):
     continueBtn = (By.ID,'continue')
     productPrice = (By.XPATH,"//div[@class ='inventory_item_price']")
     finalPrice = (By.XPATH,"//div[@class ='summary_subtotal_label']")
+    finishBtn = (By.ID,'finish')
+    thankYouMessage = (By.CLASS_NAME, 'complete-header')
 
     def verifyProductInCart(self):
         products = self.getProductList()
@@ -79,23 +77,28 @@ class CheckoutPage(ProductPage):
         return self.do_click(self.continueBtn)
 
     def getProductPrice(self):
-        print(self.get_all_elements(self.productPrice))
         return self.get_all_elements(self.productPrice)
 
     def getProductPrice(self):
 
         price_list = self.get_all_elements(self.productPrice)
+        prices =[]
         for p in price_list:
             priceText = p.text
-            print('<<<< priceText >>>>',priceText)
-            price_without_dollar = priceText.replace('$','')
-            print(price_without_dollar)
-            price = price_without_dollar.split('.')
-            print(price)
-        print(p.find_element(By.XPATH,"//div[@class ='inventory_item_price']"))
-        return p.find_element(By.XPATH,"//div[@class ='inventory_item_price']")
+            price_without_dollar = priceText.replace('$','') # Remove the dollar sign
+            price = float(price_without_dollar) # Convert the value to a float
+            prices.append(price) # Collect each price in the list
+        return prices
 
     def getTotalPrice(self):
-        final_price = self.get_element_text(self.finalPrice)
-        # finalPriceText = final_price.text
-        print('<<<< priceText >>>>',final_price)
+        finalText = self.get_element_text(self.finalPrice)
+        finalprice_split = finalText.split(':')  # This will split the string into ["Item total", " 39.98"]
+        final_without_dollar =  finalprice_split[1].strip().replace("$", "")  # Strip any whitespace and convert to float
+        final_price = float(final_without_dollar)
+        return final_price
+
+    def doFinish(self):
+        self.do_click(self.finishBtn)
+
+    def getThankYouMessage(self):
+        return self.get_element_text(self.thankYouMessage)

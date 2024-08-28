@@ -6,9 +6,7 @@ from pages.login_page import CheckoutPage, LoginPage, ProductPage
 username = 'standard_user'
 password = 'secret_sauce'
 zipcode = '292020'
-products_to_add = ['Sauce Labs Backpack', 'Sauce Labs Bike Light']
-
-# products_to_add = 'Sauce Labs Backpack'
+products_to_add = ['Sauce Labs Backpack','Sauce Labs Bike Light']
 
 @pytest.mark.usefixtures('browser_setup')
 class TestE2E:
@@ -25,6 +23,7 @@ class TestE2E:
         loginpage.doLogin()
 
         for products in products_to_add:
+            time.sleep(3)
             productpage.addProductToCart(products)
         time.sleep(5)
         cart_count = self.driver.find_element(By.CLASS_NAME, 'shopping_cart_badge').text
@@ -39,11 +38,15 @@ class TestE2E:
         checkoutpage.goCheckout()
         checkoutpage.userInformation(username,password,zipcode)
         checkoutpage.clickOnContinue()
+        time.sleep(5)
         productPrice=checkoutpage.getProductPrice()
         sum_of_price = sum(productPrice)
         final_price = checkoutpage.getTotalPrice()
         assert sum_of_price  == final_price
 
+        checkoutpage.doFinish()
+        time.sleep(5)
+        assert checkoutpage.getThankYouMessage() == 'Thank you for your order!'
 
 
 
